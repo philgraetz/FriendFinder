@@ -1,6 +1,5 @@
 let express = require('express');
 let bodyParser = require('body-parser');
-let path = require('path');
 let Friends = require('./app/data/friends.js');
 let ApiRoutes = require('./app/routing/apiRoutes');
 let HtmlRoutes = require('./app/routing/htmlRoutes');

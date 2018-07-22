@@ -1,6 +1,4 @@
 // Module to handle HTML requests
-let express = require('express');
-let bodyParser = require('body-parser');
 let path = require('path');
 
 // Constructor for ApiRoutes object

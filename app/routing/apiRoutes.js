@@ -1,6 +1,4 @@
 // Handle all API requests
-// let express = require('express');
-// let bodyParser = require('body-parser');
 
 // Constructor for ApiRoutes object
 function ApiRoutes(friends) {
