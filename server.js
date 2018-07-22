@@ -4,7 +4,9 @@ let path = require('path');
 let Friends = require('./app/data/friends.js');
 let ApiRoutes = require('./app/routing/apiRoutes');
 let HtmlRoutes = require('./app/routing/htmlRoutes');
-const PORT = 3000;
+
+// HEROKU - need to check for env var PORT
+const PORT = process.env.PORT ? process.env.PORT : 3000;
 
 let app = express();
 let friends = new Friends();
