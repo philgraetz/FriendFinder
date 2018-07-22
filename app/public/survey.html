@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Friend Finder</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="container">
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="/">Home
+                            <span class="sr-only">(current)</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="survey">Survey</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">
+                            Developer
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <a class="dropdown-item" href="api/friends">API Friends List</a>
+                            <a class="dropdown-item" href="api/questions">API Questions List</a>
+                            <a class="dropdown-item" href="https://github.com/philgraetz/FriendFinder">GitHub Repo</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <hr>
+        <h4>Dogs, please have your human help you answer these questions</h4>
+        <hr>
+
+        <form>
+            <label for="name">Name: </label>
+            <input type="text" id="name" class="form-control w-50" required>
+            <label for="photo">Link to online photo: (optional)</label>
+            <input type="text" id="photo" class="form-control w-50">
+
+            <!-- JavaScript below will fill this area with questions -->
+            <div id="question-area"></div>
+
+            <button type="submit" class="btn btn-primary" id="form-submit">Submit</button>
+        </form>
+
+    </div> <!-- container -->
+
+    <!-- Modal -->
+    <div class="modal fade" id="friend-modal" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalCenterTitle">Best Matching Friend</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div id="friend-name"></div>
+              <img id="friend-img" src="#" alt="your friend" style="max-width: 300px">
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+    </div>
+
+
+    <!-- AJAX JS (required for AJAX, also supports JQuery) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <!-- Bootstrap JS (from getbootstrap.com) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+
+    <script>
+        function fillQuestionArea() {
+            $.get("/api/questions", function (data) {
+                let html = ""
+                for (let i = 0; i < data.length; i++) {
+                    html += `
+                        <div class="form-group">
+                            <p></p><label for="q${i+1}">${i+1}. ${data[i]}</label><p>
+                            <select class="chosen-select" id="q${i+1}">
+                                <option selected>Open to select</option>
+                                <option value="1">1 Strongly Disagree</option>
+                                <option value="2">2 Disagree</option>
+                                <option value="3">3 Meh</option>
+                                <option value="4">4 Agree</option>
+                                <option value="5">5 Strongly Agree</option>
+                            </select>
+                        </div>
+                    `;
+                }
+                $("#question-area").html(html);
+            });
+        }
+
+        // Form validation
+        function validateForm() {
+            if ($("#name").val() === "") {
+                alert("I need your name");
+                return false;
+            }            
+            $(".chosen-select").each(function() {
+                if ($(this).val() === "Open to select") {
+                    alert("Please answer all questions.");
+                    return false;
+                }
+            });
+            return true;
+        }
+        
+        // Form submit
+        function submitForm() {
+            if (!validateForm()) {
+                return;
+            }
+
+            let scores = [];
+            $(".chosen-select").each(function() {
+                scores.push($(this).val());
+            });
+            
+            let data = {
+                name: $("#name").val(),
+                photo: $("#photo").val(),
+                scores: scores
+            };
+            $.post("/api/friends", data, function(result) {
+                $("#friend-name").text(result.name);
+                $("#friend-img").attr("src", result.photo);
+                $("#friend-modal").modal("toggle");
+
+            });
+        }
+
+        $(document).ready(function() {
+            fillQuestionArea();
+
+            $("#form-submit").on("click", function(event) {
+                event.preventDefault();
+                submitForm();
+            });
+        });
+    </script>
+</body>
+
+</html>
