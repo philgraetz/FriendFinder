@@ -26,7 +26,6 @@ app.use(bodyParser.json());
 //
 //  - API -
 //  GET     /api/friends       none            JSON of friends list
-//  GET     /api/best/:friend  friend          best choice for 'friend'
 //  POST    /api/friends       survey results  none
 
 // GET Home
